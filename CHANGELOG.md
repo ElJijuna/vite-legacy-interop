@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/ElJijuna/vite-legacy-interop/compare/v1.0.1...v1.0.2) (2026-04-05)
+
+
+### Bug Fixes
+
+* lazy-load module scan on first resolveId call ([7f100d1](https://github.com/ElJijuna/vite-legacy-interop/commit/7f100d1e2bc92d8c13bcbab25c7a1bffc7db1d4b))
+
 ## [1.0.1](https://github.com/ElJijuna/vite-legacy-interop/compare/v1.0.0...v1.0.1) (2026-04-05)
 
 
