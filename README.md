@@ -145,9 +145,8 @@ At startup, the plugin scans the `libDir` folder of each configured package and 
 
 ```ts
 import _mod from 'legacy-lib/lib/Button.js';
-const _component = _mod && _mod.__esModule && 'default' in _mod ? _mod.default : _mod;
-export default _component;
-export * from 'legacy-lib/lib/Button.js';
+const _default = _mod && _mod.__esModule && 'default' in _mod ? _mod.default : _mod;
+export default _default;
 ```
 
 The wrapper normalises the default export regardless of whether the original module uses `module.exports`, `exports.default`, or `__esModule` interop.

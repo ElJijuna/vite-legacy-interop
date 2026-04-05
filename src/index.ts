@@ -151,7 +151,6 @@ export function legacyInterop({ libs, showLog = false }: LegacyInteropOptions): 
         `import _mod from '${importPath}';`,
         `const _default = _mod && _mod.__esModule && 'default' in _mod ? _mod.default : _mod;`,
         `export default _default;`,
-        `export * from '${importPath}';`,
       ].join('\n')
     },
   }
