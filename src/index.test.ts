@@ -196,7 +196,7 @@ describe('legacyInterop', () => {
       const load = getLoad(plugin)
       const code = load.call({} as never, '\0legacy-interop:legacy-lib/lib/Button') as string
       expect(code).toContain("import _mod from 'legacy-lib/lib/Button.js'")
-      expect(code).toContain('export default _component')
+      expect(code).toContain('export default __component')
       expect(code).toContain("export * from 'legacy-lib/lib/Button.js'")
     })
 
