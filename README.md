@@ -38,7 +38,7 @@ flowchart TD
     subgraph with["✅ With vite-legacy-interop"]
         D["import Button from 'legacy-lib/lib/Button'"]
         D --> E["resolveId → virtual module '\0legacy-interop:legacy-lib/lib/Button'"]
-        E --> F["load → ESM wrapper: import _mod from '...'; export default _mod.default ?? _mod"]
+        E --> F["load → ESM wrapper: import _mod from '....js'; export default _mod.default ?? _mod"]
         F --> G["🚀 Clean ESM output, works at runtime"]
     end
 ```
@@ -144,10 +144,10 @@ At startup, the plugin scans the `libDir` folder of each configured package and 
 2. **`load`** — receives the virtual ID and returns an ESM wrapper:
 
 ```ts
-import _mod from 'legacy-lib/lib/Button';
+import _mod from 'legacy-lib/lib/Button.js';
 const _component = _mod && _mod.__esModule && 'default' in _mod ? _mod.default : _mod;
 export default _component;
-export * from 'legacy-lib/lib/Button';
+export * from 'legacy-lib/lib/Button.js';
 ```
 
 The wrapper normalises the default export regardless of whether the original module uses `module.exports`, `exports.default`, or `__esModule` interop.

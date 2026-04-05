@@ -145,12 +145,13 @@ export function legacyInterop({ libs, showLog = false }: LegacyInteropOptions): 
       if (!id.startsWith(VIRTUAL_PREFIX)) return null
 
       const originalImport = id.slice(VIRTUAL_PREFIX.length)
+      const importPath = originalImport.endsWith('.js') ? originalImport : `${originalImport}.js`
 
       return [
-        `import _mod from '${originalImport}';`,
-        `const _component = _mod && _mod.__esModule && 'default' in _mod ? _mod.default : _mod;`,
-        `export default _component;`,
-        `export * from '${originalImport}';`,
+        `import _mod from '${importPath}';`,
+        `const __component = _mod && _mod.__esModule && 'default' in _mod ? _mod.default : _mod;`,
+        `export default __component;`,
+        `export * from '${importPath}';`,
       ].join('\n')
     },
   }
