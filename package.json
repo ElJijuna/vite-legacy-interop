@@ -1,0 +1,68 @@
+{
+  "name": "vite-legacy-interop",
+  "version": "1.0.0",
+  "description": "Vite plugin for legacy interop",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "vite",
+    "plugin",
+    "legacy",
+    "interop"
+  ],
+  "author": "pilmee",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ElJijuna/vite-legacy-interop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ElJijuna/vite-legacy-interop/issues"
+  },
+  "homepage": "https://eljijuna.github.io/vite-legacy-interop",
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "vite": "^8.0.0"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.6",
+    "@semantic-release/npm": "^12.0.2",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "@types/node": "^25.5.2",
+    "semantic-release": "^24.2.9",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3",
+    "vite": "^8.0.3",
+    "vitest": "^4.1.2"
+  }
+}
