@@ -45,7 +45,7 @@ interface ResolvedLib {
   name: string
   libDir: string
   prefix: string
-  modules: Set<string>
+  modules: Set<string> | null
 }
 
 function scanDir(dir: string, baseDir: string): Set<string> {
@@ -68,21 +68,25 @@ function scanDir(dir: string, baseDir: string): Set<string> {
   return result
 }
 
-function resolveLib(lib: string | LibConfig): ResolvedLib {
+function createLib(lib: string | LibConfig): ResolvedLib {
   const name = typeof lib === 'string' ? lib : lib.name
   const libDir = typeof lib === 'string' ? 'lib' : (lib.libDir ?? 'lib')
   const prefix = `${name}/${libDir}/`
-  let modules = new Set<string>()
+  return { name, libDir, prefix, modules: null }
+}
 
+function ensureModules(lib: ResolvedLib): Set<string> {
+  if (lib.modules !== null) return lib.modules
+
+  lib.modules = new Set<string>()
   try {
-    const pkgPath = require.resolve(`${name}/package.json`)
-    const libDirPath = join(dirname(pkgPath), libDir)
-    modules = scanDir(libDirPath, libDirPath)
+    const pkgPath = require.resolve(`${lib.name}/package.json`)
+    const libDirPath = join(dirname(pkgPath), lib.libDir)
+    lib.modules = scanDir(libDirPath, libDirPath)
   } catch (error) {
-    console.error(`[vite-legacy-interop] Error resolving modules for '${name}':`, error)
+    console.error(`[vite-legacy-interop] Error resolving modules for '${lib.name}':`, error)
   }
-
-  return { name, libDir, prefix, modules }
+  return lib.modules
 }
 
 /**
@@ -116,7 +120,7 @@ export function legacyInterop({ libs, showLog = false }: LegacyInteropOptions): 
     throw new Error('[vite-legacy-interop] The "libs" option must be a non-empty array.')
   }
 
-  const resolvedLibs = validLibs.map(resolveLib)
+  const resolvedLibs = validLibs.map(createLib)
 
   return {
     name: 'vite-legacy-interop',
@@ -127,7 +131,7 @@ export function legacyInterop({ libs, showLog = false }: LegacyInteropOptions): 
 
         const modulePath = source.slice(lib.prefix.length)
 
-        if (!lib.modules.has(modulePath)) {
+        if (!ensureModules(lib).has(modulePath)) {
           console.warn(`[vite-legacy-interop] '${source}' was not found in '${lib.name}/${lib.libDir}'`)
           return null
         }

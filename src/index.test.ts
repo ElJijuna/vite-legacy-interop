@@ -226,7 +226,10 @@ describe('legacyInterop', () => {
 
     it('logs error when package cannot be resolved', () => {
       vi.spyOn(console, 'error').mockImplementation(() => {})
-      legacyInterop({ libs: ['unknown-lib'] })
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const plugin = legacyInterop({ libs: ['unknown-lib'] })
+      const resolveId = getResolveId(plugin)
+      resolveId.call({} as never, 'unknown-lib/lib/Button', undefined, { isEntry: false })
       expect(console.error).toHaveBeenCalledWith(
         expect.stringContaining('unknown-lib'),
         expect.any(Error)
