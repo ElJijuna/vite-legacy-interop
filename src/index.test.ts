@@ -78,7 +78,7 @@ describe('legacyInterop', () => {
       const plugin = legacyInterop({ libs: ['', 'legacy-lib', ''] })
       const resolveId = getResolveId(plugin)
       expect(resolveId.call({} as never, 'legacy-lib/lib/Button', undefined, { isEntry: false })).toBe(
-        '\0legacy-interop:legacy-lib/lib/Button'
+        '\0legacy-interop:legacy-lib/lib/Button.js'
       )
     })
   })
@@ -109,7 +109,15 @@ describe('legacyInterop', () => {
       const plugin = legacyInterop({ libs: ['legacy-lib'] })
       const resolveId = getResolveId(plugin)
       expect(resolveId.call({} as never, 'legacy-lib/lib/Button', undefined, { isEntry: false })).toBe(
-        '\0legacy-interop:legacy-lib/lib/Button'
+        '\0legacy-interop:legacy-lib/lib/Button.js'
+      )
+    })
+
+    it('resolves flat component with .js extension', () => {
+      const plugin = legacyInterop({ libs: ['legacy-lib'] })
+      const resolveId = getResolveId(plugin)
+      expect(resolveId.call({} as never, 'legacy-lib/lib/Button.js', undefined, { isEntry: false })).toBe(
+        '\0legacy-interop:legacy-lib/lib/Button.js'
       )
     })
 
@@ -117,7 +125,7 @@ describe('legacyInterop', () => {
       const plugin = legacyInterop({ libs: ['legacy-lib'] })
       const resolveId = getResolveId(plugin)
       expect(resolveId.call({} as never, 'legacy-lib/lib/Grid/Column', undefined, { isEntry: false })).toBe(
-        '\0legacy-interop:legacy-lib/lib/Grid/Column'
+        '\0legacy-interop:legacy-lib/lib/Grid/Column.js'
       )
     })
 
@@ -134,10 +142,10 @@ describe('legacyInterop', () => {
       const plugin = legacyInterop({ libs: ['legacy-lib', { name: 'other-lib', libDir: 'dist' }] })
       const resolveId = getResolveId(plugin)
       expect(resolveId.call({} as never, 'legacy-lib/lib/Button', undefined, { isEntry: false })).toBe(
-        '\0legacy-interop:legacy-lib/lib/Button'
+        '\0legacy-interop:legacy-lib/lib/Button.js'
       )
       expect(resolveId.call({} as never, 'other-lib/dist/Widget', undefined, { isEntry: false })).toBe(
-        '\0legacy-interop:other-lib/dist/Widget'
+        '\0legacy-interop:other-lib/dist/Widget.js'
       )
     })
 
@@ -145,7 +153,7 @@ describe('legacyInterop', () => {
       const plugin = legacyInterop({ libs: [{ name: 'other-lib', libDir: 'dist' }] })
       const resolveId = getResolveId(plugin)
       expect(resolveId.call({} as never, 'other-lib/dist/Widget', undefined, { isEntry: false })).toBe(
-        '\0legacy-interop:other-lib/dist/Widget'
+        '\0legacy-interop:other-lib/dist/Widget.js'
       )
       // 'lib' is not the configured libDir
       expect(resolveId.call({} as never, 'other-lib/lib/Widget', undefined, { isEntry: false })).toBeNull()
@@ -194,8 +202,8 @@ describe('legacyInterop', () => {
     it('returns ESM wrapper code for virtual module', () => {
       const plugin = legacyInterop({ libs: ['legacy-lib'] })
       const load = getLoad(plugin)
-      const code = load.call({} as never, '\0legacy-interop:legacy-lib/lib/Button') as string
-      expect(code).toContain("import _mod from 'legacy-lib/lib/Button.js'")
+      const code = load.call({} as never, '\0legacy-interop:/mocks/legacy-lib/lib/Button.js') as string
+      expect(code).toContain("import _mod from '/mocks/legacy-lib/lib/Button.js'")
       expect(code).toContain('export default _default')
       expect(code).not.toContain("export * from")
     })
@@ -203,7 +211,7 @@ describe('legacyInterop', () => {
     it('includes __esModule interop in generated code', () => {
       const plugin = legacyInterop({ libs: ['legacy-lib'] })
       const load = getLoad(plugin)
-      const code = load.call({} as never, '\0legacy-interop:legacy-lib/lib/Button') as string
+      const code = load.call({} as never, '\0legacy-interop:/mocks/legacy-lib/lib/Button.js') as string
       expect(code).toContain('_mod.__esModule')
       expect(code).toContain('_mod.default')
     })
@@ -211,8 +219,8 @@ describe('legacyInterop', () => {
     it('uses the correct original import path for nested modules', () => {
       const plugin = legacyInterop({ libs: ['legacy-lib'] })
       const load = getLoad(plugin)
-      const code = load.call({} as never, '\0legacy-interop:legacy-lib/lib/Grid/Column') as string
-      expect(code).toContain("import _mod from 'legacy-lib/lib/Grid/Column.js'")
+      const code = load.call({} as never, '\0legacy-interop:/mocks/legacy-lib/lib/Grid/Column.js') as string
+      expect(code).toContain("import _mod from '/mocks/legacy-lib/lib/Grid/Column.js'")
     })
   })
 

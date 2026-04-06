@@ -129,7 +129,7 @@ export function legacyInterop({ libs, showLog = false }: LegacyInteropOptions): 
       for (const lib of resolvedLibs) {
         if (!source.startsWith(lib.prefix)) continue
 
-        const modulePath = source.slice(lib.prefix.length)
+        const modulePath = source.slice(lib.prefix.length).replace(/\.js$/, '')
 
         if (!ensureModules(lib).has(modulePath)) {
           console.warn(`[vite-legacy-interop] '${source}' was not found in '${lib.name}/${lib.libDir}'`)
@@ -140,7 +140,15 @@ export function legacyInterop({ libs, showLog = false }: LegacyInteropOptions): 
           console.log(`[vite-legacy-interop] Resolving: ${source}`)
         }
 
-        return VIRTUAL_PREFIX + source
+        const sourceWithExt = source.endsWith('.js') ? source : `${source}.js`
+        let absolutePath: string
+        try {
+          absolutePath = require.resolve(sourceWithExt)
+        } catch {
+          absolutePath = sourceWithExt
+        }
+
+        return VIRTUAL_PREFIX + absolutePath
       }
 
       return null
@@ -148,11 +156,10 @@ export function legacyInterop({ libs, showLog = false }: LegacyInteropOptions): 
     load(id) {
       if (!id.startsWith(VIRTUAL_PREFIX)) return null
 
-      const originalImport = id.slice(VIRTUAL_PREFIX.length)
-      const importPath = originalImport.endsWith('.js') ? originalImport : `${originalImport}.js`
+      const absolutePath = id.slice(VIRTUAL_PREFIX.length)
 
       return [
-        `import _mod from '${importPath}';`,
+        `import _mod from '${absolutePath}';`,
         `const _default = _mod && _mod.__esModule && 'default' in _mod ? _mod.default : _mod;`,
         `export default _default;`,
       ].join('\n')
