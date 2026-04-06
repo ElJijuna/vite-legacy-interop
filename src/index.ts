@@ -126,37 +126,12 @@ export function legacyInterop({ libs, showLog = false, apply }: LegacyInteropOpt
   }
 
   const resolvedLibs = validLibs.map(createLib)
-  let isBuild = false
 
   return {
     name: 'vite-legacy-interop',
     enforce: 'pre',
     apply,
-    config(_, { command }) {
-      isBuild = command === 'build'
-
-      // In serve (dev) mode, pre-bundle every discovered CJS subpath module via esbuild.
-      // This produces a self-contained ESM bundle with a proper `export default`, avoiding
-      // both the "does not provide an export named 'default'" Rolldown error and broken
-      // sub-dependency require() calls that occur when CJS files are served raw.
-      if (!isBuild) {
-        const includes: string[] = []
-        for (const lib of resolvedLibs) {
-          for (const mod of ensureModules(lib)) {
-            includes.push(`${lib.name}/${lib.libDir}/${mod}`)
-          }
-        }
-        if (includes.length) {
-          return { optimizeDeps: { include: includes } }
-        }
-      }
-    },
     resolveId(source, importer) {
-      // In serve mode the modules are handled by Vite's optimized deps (esbuild pre-bundle).
-      if (!isBuild) return null
-
-      // Build mode: wrap matching subpath imports in ESM virtual modules.
-
       // Prevent re-entry loop: skip if the import originates from our own virtual module.
       if (importer?.startsWith(VIRTUAL_PREFIX)) return null
 
