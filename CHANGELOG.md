@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/ElJijuna/vite-legacy-interop/compare/v1.0.2...v1.0.3) (2026-04-06)
+
+
+### Bug Fixes
+
+* resolve absolute path in virtual module ID to prevent double-import loop ([0c0cd36](https://github.com/ElJijuna/vite-legacy-interop/commit/0c0cd36bd63d161b135a63a332bf0a8f6426c698))
+
 ## [1.0.2](https://github.com/ElJijuna/vite-legacy-interop/compare/v1.0.1...v1.0.2) (2026-04-05)
 
 
