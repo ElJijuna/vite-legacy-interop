@@ -1,3 +1,12 @@
+## [1.0.4](https://github.com/ElJijuna/vite-legacy-interop/compare/v1.0.3...v1.0.4) (2026-04-06)
+
+
+### Bug Fixes
+
+* prevent import loop via importer check instead of absolute path resolution ([bd7059b](https://github.com/ElJijuna/vite-legacy-interop/commit/bd7059b92116412f19c53913d5e35c63d8654ff6))
+* split serve/build strategies to resolve CJS interop errors in both modes ([fc4af9d](https://github.com/ElJijuna/vite-legacy-interop/commit/fc4af9db2d32caa0bc38d74f63a47cae17f9735d))
+* use namespace import in virtual module to resolve missing default export ([2bde17f](https://github.com/ElJijuna/vite-legacy-interop/commit/2bde17f9cb4370174f17a00a6ac4fc66453b2778))
+
 ## [1.0.3](https://github.com/ElJijuna/vite-legacy-interop/compare/v1.0.2...v1.0.3) (2026-04-06)
 
 
