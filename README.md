@@ -86,7 +86,7 @@ Mix string shorthand and full config objects freely:
 ```ts
 legacyInterop({
   libs: [
-    'canvas-core-react',
+    'leg-lib',
     { name: 'another-legacy-lib', libDir: 'dist' },
   ],
 })
