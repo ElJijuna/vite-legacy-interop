@@ -199,13 +199,28 @@ describe('legacyInterop', () => {
       expect(load.call({} as never, 'react')).toBeNull()
     })
 
-    it('returns ESM wrapper code for virtual module', () => {
+    it('uses namespace import to avoid missing-default-export error', () => {
       const plugin = legacyInterop({ libs: ['legacy-lib'] })
       const load = getLoad(plugin)
       const code = load.call({} as never, '\0legacy-interop:/mocks/legacy-lib/lib/Button.js') as string
-      expect(code).toContain("import _mod from '/mocks/legacy-lib/lib/Button.js'")
+      expect(code).toContain("import * as _modNs from '/mocks/legacy-lib/lib/Button.js'")
+      expect(code).not.toContain("import _mod from")
+    })
+
+    it('returns ESM wrapper with default export', () => {
+      const plugin = legacyInterop({ libs: ['legacy-lib'] })
+      const load = getLoad(plugin)
+      const code = load.call({} as never, '\0legacy-interop:/mocks/legacy-lib/lib/Button.js') as string
       expect(code).toContain('export default _default')
-      expect(code).not.toContain("export * from")
+      expect(code).not.toContain('export * from')
+    })
+
+    it('extracts default from namespace before __esModule interop', () => {
+      const plugin = legacyInterop({ libs: ['legacy-lib'] })
+      const load = getLoad(plugin)
+      const code = load.call({} as never, '\0legacy-interop:/mocks/legacy-lib/lib/Button.js') as string
+      expect(code).toContain("'default' in _modNs")
+      expect(code).toContain('_modNs.default')
     })
 
     it('includes __esModule interop in generated code', () => {
@@ -216,11 +231,30 @@ describe('legacyInterop', () => {
       expect(code).toContain('_mod.default')
     })
 
-    it('uses the correct original import path for nested modules', () => {
+    it('uses the correct absolute path for nested modules', () => {
       const plugin = legacyInterop({ libs: ['legacy-lib'] })
       const load = getLoad(plugin)
       const code = load.call({} as never, '\0legacy-interop:/mocks/legacy-lib/lib/Grid/Column.js') as string
-      expect(code).toContain("import _mod from '/mocks/legacy-lib/lib/Grid/Column.js'")
+      expect(code).toContain("import * as _modNs from '/mocks/legacy-lib/lib/Grid/Column.js'")
+    })
+  })
+
+  // ─── apply ───────────────────────────────────────────────────────────────────
+
+  describe('apply', () => {
+    it('defaults to undefined (applies to both build and serve)', () => {
+      const plugin = legacyInterop({ libs: ['legacy-lib'] })
+      expect(plugin.apply).toBeUndefined()
+    })
+
+    it('sets apply to build', () => {
+      const plugin = legacyInterop({ libs: ['legacy-lib'], apply: 'build' })
+      expect(plugin.apply).toBe('build')
+    })
+
+    it('sets apply to serve', () => {
+      const plugin = legacyInterop({ libs: ['legacy-lib'], apply: 'serve' })
+      expect(plugin.apply).toBe('serve')
     })
   })
 

@@ -39,6 +39,11 @@ export interface LegacyInteropOptions {
    * @defaultValue `false`
    */
   showLog?: boolean
+  /**
+   * Controls whether the plugin runs during build, serve, or both.
+   * @defaultValue applies to both build and serve when omitted
+   */
+  apply?: 'build' | 'serve'
 }
 
 interface ResolvedLib {
@@ -113,7 +118,7 @@ function ensureModules(lib: ResolvedLib): Set<string> {
  * })
  * ```
  */
-export function legacyInterop({ libs, showLog = false }: LegacyInteropOptions): Plugin {
+export function legacyInterop({ libs, showLog = false, apply }: LegacyInteropOptions): Plugin {
   const validLibs = libs.filter(lib => (typeof lib === 'string' ? lib : lib.name).trim() !== '')
 
   if (!validLibs.length) {
@@ -125,6 +130,7 @@ export function legacyInterop({ libs, showLog = false }: LegacyInteropOptions): 
   return {
     name: 'vite-legacy-interop',
     enforce: 'pre',
+    apply,
     resolveId(source) {
       for (const lib of resolvedLibs) {
         if (!source.startsWith(lib.prefix)) continue
@@ -159,7 +165,8 @@ export function legacyInterop({ libs, showLog = false }: LegacyInteropOptions): 
       const absolutePath = id.slice(VIRTUAL_PREFIX.length)
 
       return [
-        `import _mod from '${absolutePath}';`,
+        `import * as _modNs from '${absolutePath}';`,
+        `const _mod = 'default' in _modNs ? _modNs.default : _modNs;`,
         `const _default = _mod && _mod.__esModule && 'default' in _mod ? _mod.default : _mod;`,
         `export default _default;`,
       ].join('\n')

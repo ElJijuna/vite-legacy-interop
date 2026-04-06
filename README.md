@@ -86,7 +86,7 @@ Mix string shorthand and full config objects freely:
 ```ts
 legacyInterop({
   libs: [
-    'leg-lib',
+    'leg-libl',
     { name: 'another-legacy-lib', libDir: 'dist' },
   ],
 })
@@ -117,6 +117,19 @@ Output:
 [vite-legacy-interop] Resolving: legacy-lib/lib/Grid/Column
 ```
 
+### Limit to build or serve
+
+Use `apply` to restrict the plugin to a specific Vite phase:
+
+```ts
+legacyInterop({
+  libs: ['legacy-lib'],
+  apply: 'build', // or 'serve'
+})
+```
+
+When omitted, the plugin runs during both build and serve (Vite default).
+
 ---
 
 ## ⚙️ Options
@@ -125,6 +138,7 @@ Output:
 |---|---|---|---|---|
 | `libs` | `(string \| LibConfig)[]` | Yes | — | Libraries to intercept. Empty strings are ignored. At least one valid entry is required. |
 | `showLog` | `boolean` | No | `false` | Logs each resolved import path to the console. |
+| `apply` | `'build' \| 'serve'` | No | both | Restricts the plugin to the build or serve phase only. |
 
 ### `LibConfig`
 
@@ -144,12 +158,13 @@ At startup, the plugin scans the `libDir` folder of each configured package and 
 2. **`load`** — receives the virtual ID and returns an ESM wrapper:
 
 ```ts
-import _mod from 'legacy-lib/lib/Button.js';
+import * as _modNs from '/absolute/path/to/legacy-lib/lib/Button.js';
+const _mod = 'default' in _modNs ? _modNs.default : _modNs;
 const _default = _mod && _mod.__esModule && 'default' in _mod ? _mod.default : _mod;
 export default _default;
 ```
 
-The wrapper normalises the default export regardless of whether the original module uses `module.exports`, `exports.default`, or `__esModule` interop.
+Using a namespace import (`import * as`) avoids the _"does not provide an export named 'default'"_ error that Rolldown throws when a CJS module has no explicit default export. The wrapper then normalises the value regardless of whether the original module uses `module.exports`, `exports.default`, or `__esModule` interop.
 
 ---
 
