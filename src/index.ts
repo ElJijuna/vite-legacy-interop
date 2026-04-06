@@ -131,7 +131,10 @@ export function legacyInterop({ libs, showLog = false, apply }: LegacyInteropOpt
     name: 'vite-legacy-interop',
     enforce: 'pre',
     apply,
-    resolveId(source) {
+    resolveId(source, importer) {
+      // Prevent re-entry loop: skip if the import originates from our own virtual module
+      if (importer?.startsWith(VIRTUAL_PREFIX)) return null
+
       for (const lib of resolvedLibs) {
         if (!source.startsWith(lib.prefix)) continue
 
@@ -146,15 +149,7 @@ export function legacyInterop({ libs, showLog = false, apply }: LegacyInteropOpt
           console.log(`[vite-legacy-interop] Resolving: ${source}`)
         }
 
-        const sourceWithExt = source.endsWith('.js') ? source : `${source}.js`
-        let absolutePath: string
-        try {
-          absolutePath = require.resolve(sourceWithExt)
-        } catch {
-          absolutePath = sourceWithExt
-        }
-
-        return VIRTUAL_PREFIX + absolutePath
+        return VIRTUAL_PREFIX + source
       }
 
       return null
@@ -162,11 +157,11 @@ export function legacyInterop({ libs, showLog = false, apply }: LegacyInteropOpt
     load(id) {
       if (!id.startsWith(VIRTUAL_PREFIX)) return null
 
-      const absolutePath = id.slice(VIRTUAL_PREFIX.length)
+      const originalSource = id.slice(VIRTUAL_PREFIX.length)
+      const importPath = originalSource.endsWith('.js') ? originalSource : `${originalSource}.js`
 
       return [
-        `import * as _modNs from '${absolutePath}';`,
-        `const _mod = 'default' in _modNs ? _modNs.default : _modNs;`,
+        `import _mod from '${importPath}';`,
         `const _default = _mod && _mod.__esModule && 'default' in _mod ? _mod.default : _mod;`,
         `export default _default;`,
       ].join('\n')
