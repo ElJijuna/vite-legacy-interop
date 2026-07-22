@@ -7,6 +7,11 @@ const require = createRequire(import.meta.url)
 
 const VIRTUAL_PREFIX = '\0legacy-interop:'
 
+function splitQuery(id: string): [path: string, query: string] {
+  const queryIndex = id.indexOf('?')
+  return queryIndex === -1 ? [id, ''] : [id.slice(0, queryIndex), id.slice(queryIndex)]
+}
+
 /**
  * Library configuration for the {@link legacyInterop} plugin.
  */
@@ -135,10 +140,12 @@ export function legacyInterop({ libs, showLog = false, apply }: LegacyInteropOpt
       // Prevent re-entry loop: skip if the import originates from our own virtual module.
       if (importer?.startsWith(VIRTUAL_PREFIX)) return null
 
-      for (const lib of resolvedLibs) {
-        if (!source.startsWith(lib.prefix)) continue
+      const [sourcePath] = splitQuery(source)
 
-        const modulePath = source.slice(lib.prefix.length).replace(/\.js$/, '')
+      for (const lib of resolvedLibs) {
+        if (!sourcePath.startsWith(lib.prefix)) continue
+
+        const modulePath = sourcePath.slice(lib.prefix.length).replace(/\.js$/, '')
 
         if (!ensureModules(lib).has(modulePath)) {
           console.warn(`[vite-legacy-interop] '${source}' was not found in '${lib.name}/${lib.libDir}'`)
@@ -158,7 +165,8 @@ export function legacyInterop({ libs, showLog = false, apply }: LegacyInteropOpt
       if (!id.startsWith(VIRTUAL_PREFIX)) return null
 
       const originalSource = id.slice(VIRTUAL_PREFIX.length)
-      const importPath = originalSource.endsWith('.js') ? originalSource : `${originalSource}.js`
+      const [sourcePath, query] = splitQuery(originalSource)
+      const importPath = (sourcePath.endsWith('.js') ? sourcePath : `${sourcePath}.js`) + query
 
       return [
         `import * as _modNs from '${importPath}';`,

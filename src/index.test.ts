@@ -155,6 +155,14 @@ describe('legacyInterop', () => {
       )
     })
 
+    it('resolves import with a query suffix (e.g. ?raw)', () => {
+      const plugin = legacyInterop({ libs: ['legacy-lib'] })
+      const resolveId = getResolveId(plugin)
+      expect(resolveId.call({} as never, 'legacy-lib/lib/Button?raw', undefined, { isEntry: false })).toBe(
+        '\0legacy-interop:legacy-lib/lib/Button?raw'
+      )
+    })
+
     it('uses custom libDir', () => {
       const plugin = legacyInterop({ libs: [{ name: 'other-lib', libDir: 'dist' }] })
       const resolveId = getResolveId(plugin)
@@ -241,6 +249,13 @@ describe('legacyInterop', () => {
       const code = load.call({} as never, '\0legacy-interop:legacy-lib/lib/Button') as string
       expect(code).toContain("'default' in _mod ? _mod.default : _mod")
       expect(code).not.toContain('__esModule')
+    })
+
+    it('preserves the query suffix after the .js extension', () => {
+      const plugin = legacyInterop({ libs: ['legacy-lib'] })
+      const load = getLoad(plugin)
+      const code = load.call({} as never, '\0legacy-interop:legacy-lib/lib/Button?raw') as string
+      expect(code).toContain("import * as _modNs from 'legacy-lib/lib/Button.js?raw'")
     })
 
     it('uses the correct package path for nested modules', () => {
