@@ -179,7 +179,7 @@ Using a namespace import (`import * as`) avoids the _"does not provide an export
 
 ## 📋 Requirements
 
-- **Vite**: `^8.0.0`
+- **Vite**: `^6.0.0 || ^7.0.0 || ^8.0.0`
 - **Node.js**: `>=18`
 
 ---
