@@ -312,5 +312,25 @@ describe('legacyInterop', () => {
       const resolveId = getResolveId(plugin)
       expect(resolveId.call({} as never, 'unknown-lib/lib/Button', undefined, { isEntry: false })).toBeNull()
     })
+
+    it('warns distinctly when the package resolves but libDir does not exist', () => {
+      vi.mocked(readdirSync).mockImplementation((path: any) => {
+        if (path === '/mocks/legacy-lib/missing-dir') throw new Error('ENOENT: no such file or directory')
+        return []
+      })
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const plugin = legacyInterop({ libs: [{ name: 'legacy-lib', libDir: 'missing-dir' }] })
+      const resolveId = getResolveId(plugin)
+      resolveId.call({} as never, 'legacy-lib/missing-dir/Button', undefined, { isEntry: false })
+
+      expect(console.error).not.toHaveBeenCalled()
+      // Distinct libDir-level warning, separate from the per-module "was not found in" warning.
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining("libDir 'missing-dir' was not found for 'legacy-lib'")
+      )
+      expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('was not found in'))
+    })
   })
 })

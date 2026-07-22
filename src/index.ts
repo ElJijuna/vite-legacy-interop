@@ -58,12 +58,13 @@ interface ResolvedLib {
   modules: Set<string> | null
 }
 
-function scanDir(dir: string, baseDir: string): Set<string> {
+function scanDir(dir: string, baseDir: string, isRoot = false): Set<string> {
   const result = new Set<string>()
   let entries
   try {
     entries = readdirSync(dir, { encoding: 'utf-8', withFileTypes: true })
-  } catch {
+  } catch (error) {
+    if (isRoot) throw error
     return result
   }
   for (const entry of entries) {
@@ -89,13 +90,24 @@ function ensureModules(lib: ResolvedLib): Set<string> {
   if (lib.modules !== null) return lib.modules
 
   lib.modules = new Set<string>()
+
+  let libDirPath: string
   try {
     const pkgPath = require.resolve(`${lib.name}/package.json`)
-    const libDirPath = join(dirname(pkgPath), lib.libDir)
-    lib.modules = scanDir(libDirPath, libDirPath)
+    libDirPath = join(dirname(pkgPath), lib.libDir)
   } catch (error) {
     console.error(`[vite-legacy-interop] Error resolving modules for '${lib.name}':`, error)
+    return lib.modules
   }
+
+  try {
+    lib.modules = scanDir(libDirPath, libDirPath, true)
+  } catch {
+    console.warn(
+      `[vite-legacy-interop] libDir '${lib.libDir}' was not found for '${lib.name}' (resolved to '${libDirPath}'). Check the "libDir" option — no modules will be resolved for this library.`
+    )
+  }
+
   return lib.modules
 }
 
