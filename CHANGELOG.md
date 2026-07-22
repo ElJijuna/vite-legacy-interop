@@ -1,3 +1,18 @@
+# [1.1.0](https://github.com/ElJijuna/vite-legacy-interop/compare/v1.0.4...v1.1.0) (2026-07-22)
+
+
+### Bug Fixes
+
+* replace npm install with npm ci for consistent dependency installation ([2e761a8](https://github.com/ElJijuna/vite-legacy-interop/commit/2e761a8d7edd152a0a92d016ae77a8c35421dc24))
+* update Vite peer dependency range to support versions 6.x and 7.x ([756709e](https://github.com/ElJijuna/vite-legacy-interop/commit/756709ec6a13caba5cb95e1df7deffb4df6c4c86))
+
+
+### Features
+
+* add integration tests for legacy interop with real Vite build ([f1bc3bd](https://github.com/ElJijuna/vite-legacy-interop/commit/f1bc3bd219dd87e4acc49e802c551a49c546067f))
+* add support for query suffix in module resolution ([8388d25](https://github.com/ElJijuna/vite-legacy-interop/commit/8388d25d48daa5e1b71647868996454c6fa97d2b))
+* enhance error handling and warnings for missing libDir in legacyInterop ([87a1684](https://github.com/ElJijuna/vite-legacy-interop/commit/87a16845d8ed8c00c19af3648ab1ffd959189ee3))
+
 ## [1.0.4](https://github.com/ElJijuna/vite-legacy-interop/compare/v1.0.3...v1.0.4) (2026-04-06)
 
 
