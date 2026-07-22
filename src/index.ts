@@ -1,15 +1,15 @@
-import type { Plugin } from 'vite'
-import { join, dirname, relative } from 'node:path'
-import { createRequire } from 'node:module'
-import { readdirSync } from 'node:fs'
+import { type Dirent, readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join, relative } from 'node:path';
+import type { Plugin } from 'vite';
 
-const require = createRequire(import.meta.url)
-
-const VIRTUAL_PREFIX = '\0legacy-interop:'
+const require = createRequire(import.meta.url);
+const VIRTUAL_PREFIX = '\0legacy-interop:';
 
 function splitQuery(id: string): [path: string, query: string] {
-  const queryIndex = id.indexOf('?')
-  return queryIndex === -1 ? [id, ''] : [id.slice(0, queryIndex), id.slice(queryIndex)]
+  const queryIndex = id.indexOf('?');
+
+  return queryIndex === -1 ? [id, ''] : [id.slice(0, queryIndex), id.slice(queryIndex)];
 }
 
 /**
@@ -17,12 +17,12 @@ function splitQuery(id: string): [path: string, query: string] {
  */
 export interface LibConfig {
   /** Package name as it appears in import statements. */
-  name: string
+  name: string;
   /**
    * Subfolder inside the package to scan for modules.
    * @defaultValue `'lib'`
    */
-  libDir?: string
+  libDir?: string;
 }
 
 /**
@@ -38,77 +38,94 @@ export interface LegacyInteropOptions {
    * libs: ['legacy-lib', { name: 'another-legacy-lib', libDir: 'dist' }]
    * ```
    */
-  libs: (string | LibConfig)[]
+  libs: (string | LibConfig)[];
   /**
    * When `true`, logs each resolved import path to the console.
    * @defaultValue `false`
    */
-  showLog?: boolean
+  showLog?: boolean;
   /**
    * Controls whether the plugin runs during build, serve, or both.
    * @defaultValue applies to both build and serve when omitted
    */
-  apply?: 'build' | 'serve'
+  apply?: 'build' | 'serve';
 }
 
 interface ResolvedLib {
-  name: string
-  libDir: string
-  prefix: string
-  modules: Set<string> | null
+  name: string;
+  libDir: string;
+  prefix: string;
+  modules: Set<string> | null;
 }
 
 function scanDir(dir: string, baseDir: string, isRoot = false): Set<string> {
-  const result = new Set<string>()
-  let entries
+  const result = new Set<string>();
+
+  let entries: Dirent[];
+
   try {
-    entries = readdirSync(dir, { encoding: 'utf-8', withFileTypes: true })
+    entries = readdirSync(dir, { encoding: 'utf-8', withFileTypes: true });
   } catch (error) {
-    if (isRoot) throw error
-    return result
+    if (isRoot) {
+      throw error;
+    }
+
+    return result;
   }
+
   for (const entry of entries) {
-    const fullPath = join(dir, entry.name)
+    const fullPath = join(dir, entry.name);
+
     if (entry.isDirectory()) {
-      for (const sub of scanDir(fullPath, baseDir)) result.add(sub)
+      for (const sub of scanDir(fullPath, baseDir)) {
+        result.add(sub);
+      }
     } else if (entry.isFile() && entry.name.endsWith('.js')) {
-      const rel = relative(baseDir, fullPath).replace(/\.js$/, '').replace(/\\/g, '/')
-      result.add(rel)
+      const rel = relative(baseDir, fullPath).replace(/\.js$/, '').replace(/\\/g, '/');
+
+      result.add(rel);
     }
   }
-  return result
+
+  return result;
 }
 
 function createLib(lib: string | LibConfig): ResolvedLib {
-  const name = typeof lib === 'string' ? lib : lib.name
-  const libDir = typeof lib === 'string' ? 'lib' : (lib.libDir ?? 'lib')
-  const prefix = `${name}/${libDir}/`
-  return { name, libDir, prefix, modules: null }
+  const name = typeof lib === 'string' ? lib : lib.name;
+  const libDir = typeof lib === 'string' ? 'lib' : (lib.libDir ?? 'lib');
+  const prefix = `${name}/${libDir}/`;
+
+  return { name, libDir, prefix, modules: null };
 }
 
 function ensureModules(lib: ResolvedLib): Set<string> {
-  if (lib.modules !== null) return lib.modules
+  if (lib.modules !== null) {
+    return lib.modules;
+  }
 
-  lib.modules = new Set<string>()
+  lib.modules = new Set<string>();
 
-  let libDirPath: string
+  let libDirPath: string;
+
   try {
-    const pkgPath = require.resolve(`${lib.name}/package.json`)
-    libDirPath = join(dirname(pkgPath), lib.libDir)
+    const pkgPath = require.resolve(`${lib.name}/package.json`);
+
+    libDirPath = join(dirname(pkgPath), lib.libDir);
   } catch (error) {
-    console.error(`[vite-legacy-interop] Error resolving modules for '${lib.name}':`, error)
-    return lib.modules
+    console.error(`[vite-legacy-interop] Error resolving modules for '${lib.name}':`, error);
+
+    return lib.modules;
   }
 
   try {
-    lib.modules = scanDir(libDirPath, libDirPath, true)
+    lib.modules = scanDir(libDirPath, libDirPath, true);
   } catch {
     console.warn(
-      `[vite-legacy-interop] libDir '${lib.libDir}' was not found for '${lib.name}' (resolved to '${libDirPath}'). Check the "libDir" option — no modules will be resolved for this library.`
-    )
+      `[vite-legacy-interop] libDir '${lib.libDir}' was not found for '${lib.name}' (resolved to '${libDirPath}'). Check the "libDir" option — no modules will be resolved for this library.`,
+    );
   }
 
-  return lib.modules
+  return lib.modules;
 }
 
 /**
@@ -136,13 +153,13 @@ function ensureModules(lib: ResolvedLib): Set<string> {
  * ```
  */
 export function legacyInterop({ libs, showLog = false, apply }: LegacyInteropOptions): Plugin {
-  const validLibs = libs.filter(lib => (typeof lib === 'string' ? lib : lib.name).trim() !== '')
+  const validLibs = libs.filter((lib) => (typeof lib === 'string' ? lib : lib.name).trim() !== '');
 
   if (!validLibs.length) {
-    throw new Error('[vite-legacy-interop] The "libs" option must be a non-empty array.')
+    throw new Error('[vite-legacy-interop] The "libs" option must be a non-empty array.');
   }
 
-  const resolvedLibs = validLibs.map(createLib)
+  const resolvedLibs = validLibs.map(createLib);
 
   return {
     name: 'vite-legacy-interop',
@@ -150,44 +167,53 @@ export function legacyInterop({ libs, showLog = false, apply }: LegacyInteropOpt
     apply,
     resolveId(source, importer) {
       // Prevent re-entry loop: skip if the import originates from our own virtual module.
-      if (importer?.startsWith(VIRTUAL_PREFIX)) return null
+      if (importer?.startsWith(VIRTUAL_PREFIX)) {
+        return null;
+      }
 
-      const [sourcePath] = splitQuery(source)
+      const [sourcePath] = splitQuery(source);
 
       for (const lib of resolvedLibs) {
-        if (!sourcePath.startsWith(lib.prefix)) continue
+        if (!sourcePath.startsWith(lib.prefix)) {
+          continue;
+        }
 
-        const modulePath = sourcePath.slice(lib.prefix.length).replace(/\.js$/, '')
+        const modulePath = sourcePath.slice(lib.prefix.length).replace(/\.js$/, '');
 
         if (!ensureModules(lib).has(modulePath)) {
-          console.warn(`[vite-legacy-interop] '${source}' was not found in '${lib.name}/${lib.libDir}'`)
-          return null
+          console.warn(
+            `[vite-legacy-interop] '${source}' was not found in '${lib.name}/${lib.libDir}'`,
+          );
+
+          return null;
         }
 
         if (showLog) {
-          console.log(`[vite-legacy-interop] Resolving: ${source}`)
+          console.log(`[vite-legacy-interop] Resolving: ${source}`);
         }
 
-        return VIRTUAL_PREFIX + source
+        return VIRTUAL_PREFIX + source;
       }
 
-      return null
+      return null;
     },
     load(id) {
-      if (!id.startsWith(VIRTUAL_PREFIX)) return null
+      if (!id.startsWith(VIRTUAL_PREFIX)) {
+        return null;
+      }
 
-      const originalSource = id.slice(VIRTUAL_PREFIX.length)
-      const [sourcePath, query] = splitQuery(originalSource)
-      const importPath = (sourcePath.endsWith('.js') ? sourcePath : `${sourcePath}.js`) + query
+      const originalSource = id.slice(VIRTUAL_PREFIX.length);
+      const [sourcePath, query] = splitQuery(originalSource);
+      const importPath = (sourcePath.endsWith('.js') ? sourcePath : `${sourcePath}.js`) + query;
 
       return [
         `import * as _modNs from '${importPath}';`,
         `const _mod = 'default' in _modNs ? _modNs.default : _modNs;`,
         `const _default = _mod && 'default' in _mod ? _mod.default : _mod;`,
         `export default _default;`,
-      ].join('\n')
+      ].join('\n');
     },
-  }
+  };
 }
 
-export default legacyInterop
+export default legacyInterop;

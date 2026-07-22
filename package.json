@@ -27,6 +27,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "biome check --write .",
+    "format:check": "biome check .",
+    "check": "npm run lint && npm run format:check && npm run typecheck",
     "docs": "typedoc --options typedoc.config.cjs",
     "prepublishOnly": "npm run build"
   },
@@ -53,6 +58,7 @@
     "vite": "^6.0.0 || ^7.0.0 || ^8.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.5",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",
@@ -60,7 +66,9 @@
     "@semantic-release/npm": "^12.0.2",
     "@semantic-release/release-notes-generator": "^14.1.0",
     "@types/node": "^25.5.2",
+    "eslint": "^10.7.0",
     "semantic-release": "^24.2.9",
+    "super-configs": "^1.19.0",
     "tsup": "^8.4.0",
     "typedoc": "^0.28.18",
     "typescript": "^5.8.3",

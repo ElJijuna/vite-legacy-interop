@@ -1,3 +1,3 @@
 module.exports = function Button() {
-  return 'Button rendered'
-}
+  return 'Button rendered';
+};

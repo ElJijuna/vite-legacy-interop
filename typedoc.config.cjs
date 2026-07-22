@@ -6,10 +6,10 @@ module.exports = {
   readme: 'README.md',
   includeVersion: true,
   navigationLinks: {
-    'npm': 'https://www.npmjs.com/package/vite-legacy-interop',
-    'GitHub': 'https://github.com/ElJijuna/vite-legacy-interop',
+    npm: 'https://www.npmjs.com/package/vite-legacy-interop',
+    GitHub: 'https://github.com/ElJijuna/vite-legacy-interop',
   },
   excludePrivate: true,
   excludeInternal: true,
   plugin: [],
-}
+};

@@ -1,3 +1,3 @@
-import Button from 'legacy-lib/lib/Button'
+import Button from 'legacy-lib/lib/Button';
 
-export default Button
+export default Button;
